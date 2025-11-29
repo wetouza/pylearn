@@ -196,14 +196,12 @@ export function SnippetsLibrary({ isOpen, onClose }: SnippetsLibraryProps) {
             )}
 
             {/* Content - split view */}
-            <div className="flex-1 overflow-hidden flex flex-col sm:flex-row">
+            <div className="flex-1 flex flex-col sm:flex-row min-h-0">
               {/* Snippets list */}
               <div 
-                className="w-full sm:w-1/2 p-3 space-y-2"
+                className="w-full sm:w-1/2 p-3 space-y-2 overflow-y-auto"
                 style={{ 
                   borderRight: "1px solid hsl(var(--border))",
-                  overflowY: "auto",
-                  WebkitOverflowScrolling: "touch",
                 }}
               >
                 {filteredSnippets.length === 0 ? (
@@ -250,13 +248,7 @@ export function SnippetsLibrary({ isOpen, onClose }: SnippetsLibraryProps) {
               </div>
 
               {/* Code preview */}
-              <div 
-                className="w-full sm:w-1/2 p-3"
-                style={{ 
-                  overflowY: "auto",
-                  WebkitOverflowScrolling: "touch",
-                }}
-              >
+              <div className="w-full sm:w-1/2 p-3 overflow-y-auto">
                 {selectedSnippet ? (
                   <div className="h-full flex flex-col">
                     <div className="flex items-start justify-between gap-2 mb-3 flex-shrink-0">

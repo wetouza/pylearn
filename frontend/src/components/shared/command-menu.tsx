@@ -405,7 +405,7 @@ export function CommandMenu() {
                 {/* Results */}
                 <div
                   ref={listRef}
-                  className="max-h-[50vh] sm:max-h-[60vh] overflow-y-auto overscroll-contain scroll-smooth"
+                  className="max-h-[50vh] sm:max-h-[60vh] overflow-y-auto scroll-smooth"
                   style={{
                     scrollbarWidth: "thin",
                     scrollbarColor: "hsl(var(--muted-foreground) / 0.3) transparent",
