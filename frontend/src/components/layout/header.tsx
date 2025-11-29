@@ -16,7 +16,7 @@ const navigation = [
   { name: "Печать", href: "/typing" },
   { name: "Глоссарий", href: "/glossary" },
   { name: "Тренажёры", href: "/trainers" },
-  { name: "Сообщество", href: "/community" },
+  { name: "Ресурсы", href: "/resources" },
 ];
 
 export function Header() {
