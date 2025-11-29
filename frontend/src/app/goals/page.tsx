@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Target,
@@ -17,6 +17,8 @@ import {
   Zap,
   Award,
   Clock,
+  Keyboard,
+  BookOpen,
 } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
@@ -33,6 +35,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollReveal, StaggerContainer, StaggerItem } from "@/components/shared/motion";
+import { useProgress } from "@/hooks/useProgress";
+import { AchievementsDisplay } from "@/components/shared/achievements-display";
+import { achievements as allAchievements } from "@/data/achievements";
+import { guides } from "@/data/guides";
 
 interface Goal {
   id: string;
@@ -179,6 +185,13 @@ export default function GoalsPage() {
   const [goals, setGoals] = useState<Goal[]>(initialGoals);
   const [newGoalTitle, setNewGoalTitle] = useState("");
   const [isAddingGoal, setIsAddingGoal] = useState(false);
+  
+  const { progress, completionPercentage, averageWpm, updateStreak } = useProgress();
+  
+  // Update streak on page visit
+  useEffect(() => {
+    updateStreak();
+  }, [updateStreak]);
 
   const toggleMilestone = (goalId: string, milestoneId: string) => {
     setGoals((prev) =>
@@ -190,11 +203,11 @@ export default function GoalsPage() {
         );
 
         const completedCount = updatedMilestones.filter((m) => m.completed).length;
-        const progress = Math.round(
+        const progressVal = Math.round(
           (completedCount / updatedMilestones.length) * 100
         );
 
-        return { ...goal, milestones: updatedMilestones, progress };
+        return { ...goal, milestones: updatedMilestones, progress: progressVal };
       })
     );
   };
@@ -225,7 +238,8 @@ export default function GoalsPage() {
   );
 
   const completedGoals = goals.filter((g) => g.progress === 100).length;
-  const unlockedAchievements = achievements.filter((a) => a.unlocked).length;
+  const unlockedAchievements = progress.achievements.length;
+  const totalAchievements = allAchievements.length;
 
   return (
     <>
@@ -259,31 +273,37 @@ export default function GoalsPage() {
         {/* Stats */}
         <section className="py-8 border-y border-white/10 bg-background/50 backdrop-blur-xl">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               {[
                 {
-                  icon: Target,
-                  value: goals.length,
-                  label: "Целей",
+                  icon: BookOpen,
+                  value: progress.completedGuides.length,
+                  label: "Уроков пройдено",
                   color: "text-neon-cyan",
                 },
                 {
-                  icon: CheckCircle2,
-                  value: completedGoals,
-                  label: "Выполнено",
-                  color: "text-neon-green",
-                },
-                {
                   icon: Trophy,
-                  value: unlockedAchievements,
+                  value: `${unlockedAchievements}/${totalAchievements}`,
                   label: "Достижений",
                   color: "text-python-yellow",
                 },
                 {
                   icon: Flame,
-                  value: "3 дня",
+                  value: `${progress.streak.current} дн.`,
                   label: "Серия",
                   color: "text-orange-500",
+                },
+                {
+                  icon: Keyboard,
+                  value: averageWpm,
+                  label: "Средний WPM",
+                  color: "text-neon-green",
+                },
+                {
+                  icon: Star,
+                  value: progress.streak.best,
+                  label: "Лучшая серия",
+                  color: "text-neon-purple",
                 },
               ].map((stat) => (
                 <motion.div
@@ -447,7 +467,7 @@ export default function GoalsPage() {
                     </div>
                     <div>
                       <div className="font-semibold">
-                        {unlockedAchievements} / {achievements.length}
+                        {unlockedAchievements} / {totalAchievements}
                       </div>
                       <div className="text-sm text-muted-foreground">
                         достижений получено
@@ -455,39 +475,12 @@ export default function GoalsPage() {
                     </div>
                   </div>
                   <Progress
-                    value={(unlockedAchievements / achievements.length) * 100}
+                    value={(unlockedAchievements / totalAchievements) * 100}
                     variant="gradient"
                   />
                 </Card>
 
-                <div className="space-y-3">
-                  {achievements.map((achievement) => (
-                    <motion.div
-                      key={achievement.id}
-                      className={`p-4 rounded-xl border ${
-                        achievement.unlocked
-                          ? rarityColors[achievement.rarity]
-                          : "border-white/10 bg-white/5 opacity-50"
-                      }`}
-                      whileHover={achievement.unlocked ? { scale: 1.02 } : {}}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{achievement.icon}</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-sm">
-                            {achievement.title}
-                          </div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {achievement.description}
-                          </div>
-                        </div>
-                        {achievement.unlocked && (
-                          <CheckCircle2 className="w-5 h-5 text-neon-green flex-shrink-0" />
-                        )}
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+                <AchievementsDisplay showLocked={true} />
 
                 {/* Motivation card */}
                 <Card

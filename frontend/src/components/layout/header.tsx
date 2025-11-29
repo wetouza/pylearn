@@ -7,14 +7,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { CommandMenu } from "@/components/shared/command-menu";
 import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "Гайды", href: "/guides" },
   { name: "VS Code", href: "/vscode" },
   { name: "Печать", href: "/typing" },
+  { name: "Глоссарий", href: "/glossary" },
+  { name: "Тренажёры", href: "/trainers" },
   { name: "Сообщество", href: "/community" },
-  { name: "Ресурсы", href: "/resources" },
 ];
 
 export function Header() {
@@ -100,9 +102,10 @@ export function Header() {
 
           {/* Right side */}
           <div className="flex items-center gap-1 sm:gap-2">
+            <CommandMenu />
             <ThemeToggle />
 
-            <Link href="/guides" className="hidden sm:block">
+            <Link href="/guides" className="hidden md:block">
               <Button variant="glow" size="sm" className="btn-shimmer">
                 Начать обучение
               </Button>

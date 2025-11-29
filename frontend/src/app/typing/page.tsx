@@ -10,10 +10,13 @@ import {
   Trophy,
   Keyboard,
   TrendingUp,
+  History,
+  X,
 } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
+import { useProgress, TypingStats } from "@/hooks/useProgress";
 
 // Слова для практики
 const wordLists = {
@@ -60,9 +63,12 @@ export default function TypingPage() {
   const [timeLeft, setTimeLeft] = useState<number>(timeMode);
   const [typedWords, setTypedWords] = useState<{word: string; correct: boolean}[]>([]);
   const [stats, setStats] = useState<Stats>({ wpm: 0, accuracy: 100, correct: 0, incorrect: 0 });
+  const [showHistory, setShowHistory] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const startTimeRef = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  const { progress, saveTypingStats, averageWpm } = useProgress();
 
   // Генерация слов
   const generateWords = useCallback(() => {
@@ -113,6 +119,18 @@ export default function TypingPage() {
 
     return () => clearInterval(interval);
   }, [isStarted, isFinished]);
+
+  // Сохранение результатов при завершении
+  useEffect(() => {
+    if (isFinished && stats.wpm > 0) {
+      saveTypingStats({
+        wpm: stats.wpm,
+        accuracy: stats.accuracy,
+        mode,
+        duration: timeMode,
+      });
+    }
+  }, [isFinished, stats.wpm, stats.accuracy, mode, timeMode, saveTypingStats]);
 
   // Обновление WPM в реальном времени
   useEffect(() => {
@@ -276,6 +294,19 @@ export default function TypingPage() {
                 </button>
               ))}
             </div>
+
+            {/* History button */}
+            {progress.typingStats.length > 0 && (
+              <button
+                onClick={() => setShowHistory(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all hover:bg-white/10"
+                style={{ background: "hsl(var(--muted))" }}
+              >
+                <History className="w-4 h-4" />
+                <span className="hidden sm:inline">История</span>
+                <span className="text-muted-foreground">({progress.typingStats.length})</span>
+              </button>
+            )}
           </div>
 
           {/* Stats bar */}
@@ -465,6 +496,134 @@ export default function TypingPage() {
       </main>
 
       <Footer />
+
+      {/* History Modal */}
+      <AnimatePresence>
+        {showHistory && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowHistory(false)}
+              className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-lg mx-4"
+            >
+              <div
+                className="rounded-xl shadow-2xl overflow-hidden max-h-[80vh] flex flex-col"
+                style={{
+                  background: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--border))",
+                }}
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: "hsl(var(--border))" }}>
+                  <div className="flex items-center gap-2">
+                    <History className="w-5 h-5" style={{ color: "hsl(var(--primary))" }} />
+                    <h2 className="font-semibold">История результатов</h2>
+                  </div>
+                  <button
+                    onClick={() => setShowHistory(false)}
+                    className="p-1 rounded-lg hover:bg-white/10 transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Stats summary */}
+                <div className="p-4 border-b" style={{ borderColor: "hsl(var(--border))" }}>
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <div className="text-2xl font-bold" style={{ color: "hsl(var(--primary))" }}>
+                        {averageWpm}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Средний WPM</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-green-500">
+                        {progress.typingStats.length > 0
+                          ? Math.round(
+                              progress.typingStats.reduce((a, b) => a + b.accuracy, 0) /
+                                progress.typingStats.length
+                            )
+                          : 0}%
+                      </div>
+                      <div className="text-xs text-muted-foreground">Средняя точность</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold">
+                        {progress.typingStats.length > 0
+                          ? Math.max(...progress.typingStats.map((s) => s.wpm))
+                          : 0}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Лучший WPM</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Chart */}
+                {progress.typingStats.length > 1 && (
+                  <div className="p-4 border-b" style={{ borderColor: "hsl(var(--border))" }}>
+                    <div className="text-xs text-muted-foreground mb-2">Прогресс WPM</div>
+                    <div className="h-24 flex items-end gap-1">
+                      {progress.typingStats.slice(-20).map((stat, i) => {
+                        const maxWpm = Math.max(...progress.typingStats.map((s) => s.wpm));
+                        const height = maxWpm > 0 ? (stat.wpm / maxWpm) * 100 : 0;
+                        return (
+                          <div
+                            key={i}
+                            className="flex-1 rounded-t transition-all hover:opacity-80"
+                            style={{
+                              height: `${height}%`,
+                              minHeight: "4px",
+                              background: `linear-gradient(to top, hsl(var(--gradient-start)), hsl(var(--gradient-end)))`,
+                            }}
+                            title={`${stat.wpm} WPM`}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* History list */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                  {progress.typingStats
+                    .slice()
+                    .reverse()
+                    .slice(0, 20)
+                    .map((stat, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between p-3 rounded-lg"
+                        style={{ background: "hsl(var(--muted))" }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="text-lg font-bold" style={{ color: "hsl(var(--primary))" }}>
+                            {stat.wpm}
+                          </div>
+                          <div className="text-xs text-muted-foreground">WPM</div>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm">
+                          <span className="text-green-500">{stat.accuracy}%</span>
+                          <span className="text-muted-foreground">{stat.duration}с</span>
+                          <span className="text-muted-foreground text-xs">
+                            {new Date(stat.date).toLocaleDateString("ru-RU")}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -401,26 +401,45 @@ export default function ResourcesPage() {
             </p>
           </motion.div>
 
-          {/* Category tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-6 sm:mb-8 scrollbar-hide">
-            {categories.map((cat) => {
-              const Icon = cat.icon;
-              const isActive = activeCategory === cat.id;
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => setActiveCategory(cat.id)}
-                  className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all"
-                  style={{
-                    background: isActive ? "hsl(var(--primary))" : "hsl(var(--muted))",
-                    color: isActive ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))"
-                  }}
-                >
-                  <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  {cat.name}
-                </button>
-              );
-            })}
+          {/* Search and Category tabs */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6 sm:mb-8">
+            {/* Search */}
+            <div className="relative flex-shrink-0 sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Поиск ресурсов..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 rounded-full text-sm bg-transparent outline-none transition-colors"
+                style={{ 
+                  background: "hsl(var(--muted))", 
+                  border: "1px solid hsl(var(--border))" 
+                }}
+              />
+            </div>
+            
+            {/* Category tabs */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {categories.map((cat) => {
+                const Icon = cat.icon;
+                const isActive = activeCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setActiveCategory(cat.id)}
+                    className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all"
+                    style={{
+                      background: isActive ? "hsl(var(--primary))" : "hsl(var(--muted))",
+                      color: isActive ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))"
+                    }}
+                  >
+                    <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    {cat.name}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Torrent Clients */}

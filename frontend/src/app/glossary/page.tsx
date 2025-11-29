@@ -284,7 +284,9 @@ export default function GlossaryPage() {
               <h3 className="text-sm font-semibold text-muted-foreground mb-4 text-center">
                 Алфавитный указатель
               </h3>
-              <div className="flex flex-wrap justify-center gap-2">
+              
+              {/* Cyrillic */}
+              <div className="flex flex-wrap justify-center gap-1 mb-4">
                 {"АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ".split("").map((letter) => {
                   const hasTerms = glossaryTerms.some((term) =>
                     term.term.toUpperCase().startsWith(letter)
@@ -299,7 +301,35 @@ export default function GlossaryPage() {
                         }
                       }}
                       disabled={!hasTerms}
-                      className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
+                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+                        hasTerms
+                          ? "hover:bg-white/10 text-foreground"
+                          : "text-muted-foreground/30 cursor-not-allowed"
+                      }`}
+                    >
+                      {letter}
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {/* Latin */}
+              <div className="flex flex-wrap justify-center gap-1">
+                {"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((letter) => {
+                  const hasTerms = glossaryTerms.some((term) =>
+                    term.term.toUpperCase().startsWith(letter)
+                  );
+                  return (
+                    <button
+                      key={letter}
+                      onClick={() => {
+                        if (hasTerms) {
+                          setSearchQuery(letter);
+                          setSelectedCategory("all");
+                        }
+                      }}
+                      disabled={!hasTerms}
+                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
                         hasTerms
                           ? "hover:bg-white/10 text-foreground"
                           : "text-muted-foreground/30 cursor-not-allowed"

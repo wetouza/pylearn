@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
 import { PageTransitionProvider } from "@/components/providers/page-transition-provider";
 import { Toaster } from "@/components/ui/toaster";
+import { ScrollToTop } from "@/components/shared/scroll-to-top";
 import "./globals.css";
 
 const inter = Inter({
@@ -30,12 +31,23 @@ export const metadata: Metadata = {
     "VS Code",
   ],
   authors: [{ name: "PyLearn Team" }],
+  manifest: "/manifest.json",
   openGraph: {
     title: "PyLearn — Изучай Python с нуля",
     description:
       "Современная образовательная платформа для изучения Python для полных новичков.",
     type: "website",
     locale: "ru_RU",
+    siteName: "PyLearn",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PyLearn — Изучай Python с нуля",
+    description: "Современная образовательная платформа для изучения Python",
+  },
+  other: {
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
   },
 };
 
@@ -62,6 +74,7 @@ export default function RootLayout({
               </PageTransitionProvider>
             </div>
             <Toaster />
+            <ScrollToTop />
           </SmoothScrollProvider>
         </ThemeProvider>
       </body>

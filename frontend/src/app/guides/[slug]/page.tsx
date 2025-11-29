@@ -16,14 +16,21 @@ import {
   Check,
   Youtube,
   ExternalLink,
+  Trophy,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollReveal, FadeInUp } from "@/components/shared/motion";
+import { Breadcrumbs } from "@/components/shared/breadcrumbs";
+import { ReadingProgress } from "@/components/shared/reading-progress";
+import { Quiz } from "@/components/shared/quiz";
+import { ShareButtons } from "@/components/shared/share-buttons";
 import { guides, getGuideBySlug } from "@/data/guides";
+import { getQuizBySlug, hasQuiz } from "@/data/quizzes";
+import { useProgress } from "@/hooks/useProgress";
 import { formatDuration, getDifficultyLabel } from "@/lib/utils";
 import type { GuideContent } from "@/data/guides";
 
@@ -159,6 +166,35 @@ export default function GuidePage() {
   const params = useParams();
   const slug = params.slug as string;
   const guide = getGuideBySlug(slug);
+  const quiz = getQuizBySlug(slug);
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
+  
+  const { completeGuide, saveQuizResult, isGuideCompleted, updateStreak } = useProgress();
+  
+  // Check if already completed
+  useEffect(() => {
+    if (guide) {
+      setIsCompleted(isGuideCompleted(guide.id));
+      updateStreak();
+    }
+  }, [guide, isGuideCompleted, updateStreak]);
+
+  const handleComplete = () => {
+    if (guide && !isCompleted) {
+      completeGuide(guide.id);
+      setIsCompleted(true);
+    }
+  };
+
+  const handleQuizComplete = (score: number) => {
+    if (guide) {
+      saveQuizResult(guide.id, score);
+      if (score >= 70) {
+        handleComplete();
+      }
+    }
+  };
 
   if (!guide) {
     return (
@@ -194,30 +230,19 @@ export default function GuidePage() {
   return (
     <>
       <Header />
+      <ReadingProgress />
       <main className="flex-1 pt-16 sm:pt-20">
-        {/* Progress bar */}
-        <div className="fixed top-14 sm:top-16 left-0 right-0 z-30 h-0.5 sm:h-1" style={{ background: "hsl(var(--muted))" }}>
-          <motion.div
-            className="h-full"
-            style={{ background: "linear-gradient(90deg, hsl(var(--gradient-start)), hsl(var(--gradient-end)))" }}
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.5 }}
-          />
-        </div>
-
         {/* Hero */}
         <section className="relative py-8 sm:py-12 lg:py-16 overflow-hidden border-b" style={{ borderColor: "hsl(var(--border))" }}>
           <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
             <FadeInUp>
-              {/* Breadcrumb */}
-              <Link
-                href="/guides"
-                className="inline-flex items-center gap-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors mb-4 sm:mb-6"
-              >
-                <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                Все уроки
-              </Link>
+              {/* Breadcrumbs */}
+              <Breadcrumbs
+                items={[
+                  { label: "Гайды", href: "/guides" },
+                  { label: guide.title },
+                ]}
+              />
 
               <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 sm:gap-6">
                 <div className="flex-1">
@@ -244,6 +269,7 @@ export default function GuidePage() {
                     <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     Урок {currentIndex + 1}/{guides.length}
                   </div>
+                  <ShareButtons title={`${guide.title} — PyLearn`} />
                 </div>
               </div>
 
@@ -283,14 +309,57 @@ export default function GuidePage() {
                     <ContentBlock key={index} block={block} />
                   ))}
 
+                  {/* Quiz section */}
+                  {quiz && (
+                    <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t" style={{ borderColor: "hsl(var(--border))" }}>
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <Trophy className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: "hsl(var(--primary))" }} />
+                          <span className="font-semibold text-sm sm:text-base">Проверь себя</span>
+                        </div>
+                        {!showQuiz && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowQuiz(true)}
+                          >
+                            Пройти квиз
+                          </Button>
+                        )}
+                      </div>
+                      
+                      {showQuiz && (
+                        <Quiz questions={quiz} onComplete={handleQuizComplete} />
+                      )}
+                    </div>
+                  )}
+
                   {/* Completion */}
                   <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t" style={{ borderColor: "hsl(var(--border))" }}>
-                    <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4" style={{ color: "hsl(145 60% 45%)" }}>
-                      <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
-                      <span className="font-semibold text-sm sm:text-base">Урок завершён!</span>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2 sm:gap-3" style={{ color: isCompleted ? "hsl(145 60% 45%)" : "hsl(var(--muted-foreground))" }}>
+                        <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <span className="font-semibold text-sm sm:text-base">
+                          {isCompleted ? "Урок завершён!" : "Завершить урок"}
+                        </span>
+                      </div>
+                      {!isCompleted && !quiz && (
+                        <Button
+                          variant="glow"
+                          size="sm"
+                          onClick={handleComplete}
+                        >
+                          Отметить как пройденный
+                        </Button>
+                      )}
                     </div>
                     <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6">
-                      Отличная работа! Переходи к следующему уроку.
+                      {isCompleted 
+                        ? "Отличная работа! Переходи к следующему уроку."
+                        : quiz 
+                          ? "Пройди квиз выше, чтобы завершить урок."
+                          : "Нажми кнопку, когда закончишь изучение материала."
+                      }
                     </p>
 
                     {/* Navigation */}

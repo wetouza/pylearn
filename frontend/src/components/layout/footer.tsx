@@ -9,8 +9,10 @@ const footerLinks = {
   learn: [
     { name: "Гайды по Python", href: "/guides" },
     { name: "Настройка VS Code", href: "/vscode" },
-    { name: "Typing Trainer", href: "/typing" },
-    { name: "Сообщество", href: "/community" },
+    { name: "Тренажёр печати", href: "/typing" },
+    { name: "Глоссарий", href: "/glossary" },
+    { name: "Тренажёры", href: "/trainers" },
+    { name: "Мой прогресс", href: "/goals" },
   ],
   resources: [
     { name: "Полезные ресурсы", href: "/resources" },
