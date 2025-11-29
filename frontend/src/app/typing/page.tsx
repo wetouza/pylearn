@@ -70,7 +70,7 @@ export default function TypingPage() {
   
   const { progress, saveTypingStats, averageWpm } = useProgress();
 
-  // Генерация слов
+  // Generate words for typing
   const generateWords = useCallback(() => {
     const list = wordLists[mode];
     const result: string[] = [];
@@ -85,25 +85,7 @@ export default function TypingPage() {
     setWords(generateWords());
   }, [generateWords]);
 
-  // Расчёт финальной статистики
-  const calculateFinalStats = useCallback(() => {
-    if (!startTimeRef.current) return;
-    
-    const elapsed = (Date.now() - startTimeRef.current) / 1000 / 60;
-    const correctWords = typedWords.filter(w => w.correct).length;
-    const totalWords = typedWords.length;
-    const wpm = elapsed > 0 ? Math.round(correctWords / elapsed) : 0;
-    const accuracy = totalWords > 0 ? Math.round((correctWords / totalWords) * 100) : 100;
-    
-    setStats({
-      wpm,
-      accuracy,
-      correct: correctWords,
-      incorrect: totalWords - correctWords
-    });
-  }, [typedWords]);
-
-  // Таймер
+  // Timer
   useEffect(() => {
     if (!isStarted || isFinished) return;
 

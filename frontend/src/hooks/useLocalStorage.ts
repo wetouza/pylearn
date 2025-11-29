@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 export function useLocalStorage<T>(
   key: string,
@@ -9,13 +9,19 @@ export function useLocalStorage<T>(
   // State to store our value
   const [storedValue, setStoredValue] = useState<T>(initialValue);
   const [isHydrated, setIsHydrated] = useState(false);
+  
+  // Use ref to always have current value for callbacks
+  const storedValueRef = useRef<T>(storedValue);
+  storedValueRef.current = storedValue;
 
   // Hydrate from localStorage on mount
   useEffect(() => {
     try {
       const item = window.localStorage.getItem(key);
       if (item) {
-        setStoredValue(JSON.parse(item));
+        const parsed = JSON.parse(item);
+        setStoredValue(parsed);
+        storedValueRef.current = parsed;
       }
     } catch (error) {
       console.warn(`Error reading localStorage key "${key}":`, error);
@@ -27,8 +33,10 @@ export function useLocalStorage<T>(
   const setValue = useCallback(
     (value: T | ((prev: T) => T)) => {
       try {
-        const valueToStore = value instanceof Function ? value(storedValue) : value;
+        // Use ref to get current value to avoid stale closure
+        const valueToStore = value instanceof Function ? value(storedValueRef.current) : value;
         setStoredValue(valueToStore);
+        storedValueRef.current = valueToStore;
         if (typeof window !== "undefined") {
           window.localStorage.setItem(key, JSON.stringify(valueToStore));
         }
@@ -36,13 +44,14 @@ export function useLocalStorage<T>(
         console.warn(`Error setting localStorage key "${key}":`, error);
       }
     },
-    [key, storedValue]
+    [key]
   );
 
   // Remove from localStorage
   const removeValue = useCallback(() => {
     try {
       setStoredValue(initialValue);
+      storedValueRef.current = initialValue;
       if (typeof window !== "undefined") {
         window.localStorage.removeItem(key);
       }

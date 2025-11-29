@@ -6,6 +6,7 @@ import { HowItWorksSection } from "@/components/sections/how-it-works";
 import { FAQSection } from "@/components/sections/faq-section";
 import { CTASection } from "@/components/sections/cta";
 import { WebsiteJsonLd, CourseJsonLd } from "@/components/shared/json-ld";
+import { ContinueLearningWrapper } from "@/components/shared/continue-learning-wrapper";
 
 export default function HomePage() {
   return (
@@ -25,6 +26,7 @@ export default function HomePage() {
       <Header />
       <main className="flex-1">
         <HeroSection />
+        <ContinueLearningWrapper />
         <FeaturesSection />
         <HowItWorksSection />
         <FAQSection />

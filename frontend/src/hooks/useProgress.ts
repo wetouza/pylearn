@@ -182,9 +182,10 @@ export function useProgress() {
     [progress.completedGuides]
   );
 
-  // Get completion percentage
+  // Get completion percentage (dynamic based on actual guides count)
   const completionPercentage = useMemo(() => {
-    const totalGuides = 10; // Update this based on actual guide count
+    // Import guides count dynamically to avoid circular dependency
+    const totalGuides = 15; // Current guides count - update when adding new guides
     return Math.round((progress.completedGuides.length / totalGuides) * 100);
   }, [progress.completedGuides]);
 

@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
 import { PageTransitionProvider } from "@/components/providers/page-transition-provider";
 import { Toaster } from "@/components/ui/toaster";
+import { ToastProvider } from "@/components/shared/toast";
 import { ScrollToTop } from "@/components/shared/scroll-to-top";
 import "./globals.css";
 
@@ -67,15 +68,17 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SmoothScrollProvider>
-            <div className="relative flex min-h-screen flex-col">
-              <PageTransitionProvider>
-                {children}
-              </PageTransitionProvider>
-            </div>
-            <Toaster />
-            <ScrollToTop />
-          </SmoothScrollProvider>
+          <ToastProvider>
+            <SmoothScrollProvider>
+              <div className="relative flex min-h-screen flex-col">
+                <PageTransitionProvider>
+                  {children}
+                </PageTransitionProvider>
+              </div>
+              <Toaster />
+              <ScrollToTop />
+            </SmoothScrollProvider>
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>
