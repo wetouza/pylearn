@@ -35,13 +35,21 @@ export function SnippetsLibrary({ isOpen, onClose }: SnippetsLibraryProps) {
   // Prevent body scroll when open
   useEffect(() => {
     if (isOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = "0";
+      document.body.style.right = "0";
       document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
+      return () => {
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.left = "";
+        document.body.style.right = "";
+        document.body.style.overflow = "";
+        window.scrollTo(0, scrollY);
+      };
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
   }, [isOpen]);
 
   // Filter snippets
@@ -94,7 +102,7 @@ export function SnippetsLibrary({ isOpen, onClose }: SnippetsLibraryProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-[9998]"
+            className="fixed inset-0 z-[9998] touch-none"
             style={{
               backgroundColor: "rgba(0, 0, 0, 0.6)",
               backdropFilter: "blur(4px)",
@@ -191,7 +199,7 @@ export function SnippetsLibrary({ isOpen, onClose }: SnippetsLibraryProps) {
             <div className="flex-1 overflow-hidden flex flex-col sm:flex-row min-h-0">
               {/* Snippets list */}
               <div 
-                className="w-full sm:w-1/2 overflow-y-auto p-3 space-y-2"
+                className="w-full sm:w-1/2 overflow-y-auto p-3 space-y-2 overscroll-contain"
                 style={{ 
                   borderRight: "1px solid hsl(var(--border))",
                   minHeight: "200px",
@@ -243,7 +251,7 @@ export function SnippetsLibrary({ isOpen, onClose }: SnippetsLibraryProps) {
 
               {/* Code preview */}
               <div 
-                className="w-full sm:w-1/2 overflow-y-auto p-3"
+                className="w-full sm:w-1/2 overflow-y-auto p-3 overscroll-contain"
                 style={{ 
                   minHeight: "200px",
                   maxHeight: "calc(100vh - 200px)",
