@@ -187,14 +187,15 @@ export function SnippetsLibrary({ isOpen, onClose }: SnippetsLibraryProps) {
               </div>
             )}
 
-            {/* Content - split view on desktop, stacked on mobile */}
+            {/* Content - split view */}
             <div className="flex-1 overflow-hidden flex flex-col sm:flex-row min-h-0">
               {/* Snippets list */}
               <div 
-                className="sm:w-1/2 overflow-y-auto p-3 space-y-2 flex-shrink-0"
+                className="w-full sm:w-1/2 overflow-y-auto p-3 space-y-2"
                 style={{ 
                   borderRight: "1px solid hsl(var(--border))",
-                  maxHeight: selectedSnippet ? "40vh" : "100%",
+                  minHeight: "200px",
+                  maxHeight: "calc(100vh - 200px)",
                 }}
               >
                 {filteredSnippets.length === 0 ? (
@@ -241,7 +242,13 @@ export function SnippetsLibrary({ isOpen, onClose }: SnippetsLibraryProps) {
               </div>
 
               {/* Code preview */}
-              <div className="sm:w-1/2 overflow-y-auto p-3 flex-1 min-h-0">
+              <div 
+                className="w-full sm:w-1/2 overflow-y-auto p-3"
+                style={{ 
+                  minHeight: "200px",
+                  maxHeight: "calc(100vh - 200px)",
+                }}
+              >
                 {selectedSnippet ? (
                   <div className="h-full flex flex-col">
                     <div className="flex items-start justify-between gap-2 mb-3 flex-shrink-0">
