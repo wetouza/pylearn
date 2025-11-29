@@ -81,30 +81,30 @@ export function FeaturesSection() {
           {features.map((feature) => (
             <StaggerItem key={feature.title}>
               <Link href={feature.href} className="block h-full">
-                <div className="glass-card-hover h-full p-5 sm:p-6 group cursor-pointer">
+                <div className="glass-card-hover h-full p-6 group cursor-pointer flex flex-col" style={{ minHeight: "220px" }}>
                   {/* Icon */}
                   <motion.div
-                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-5 transition-all duration-300 group-hover:scale-110"
+                    className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110 flex-shrink-0"
                     style={{ background: "linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-end)))" }}
                   >
-                    <feature.icon className="w-6 h-6 sm:w-7 sm:h-7 text-primary-foreground" />
+                    <feature.icon className="w-6 h-6 text-primary-foreground" />
                   </motion.div>
 
                   {/* Content */}
-                  <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 group-hover:text-primary transition-colors">
+                  <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
                     {feature.title}
                   </h3>
-                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-3 sm:mb-4">
+                  <p className="text-sm text-muted-foreground leading-relaxed flex-grow">
                     {feature.description}
                   </p>
 
                   {/* Link */}
                   <div 
-                    className="flex items-center text-xs sm:text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="flex items-center text-sm font-medium mt-4 opacity-0 group-hover:opacity-100 transition-opacity"
                     style={{ color: "hsl(var(--primary))" }}
                   >
                     Перейти
-                    <ArrowRight className="ml-1 w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
               </Link>
@@ -114,20 +114,21 @@ export function FeaturesSection() {
           {/* CTA Card */}
           <StaggerItem>
             <div 
-              className="glass-card h-full p-5 sm:p-6 flex flex-col justify-center items-center text-center"
+              className="glass-card h-full p-6 flex flex-col justify-center items-center text-center"
               style={{ 
                 background: "linear-gradient(135deg, hsl(var(--gradient-start) / 0.1), hsl(var(--gradient-end) / 0.1))",
-                borderColor: "hsl(var(--primary) / 0.2)"
+                borderColor: "hsl(var(--primary) / 0.2)",
+                minHeight: "220px"
               }}
             >
               <div 
-                className="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mb-4 sm:mb-5"
+                className="w-14 h-14 rounded-full flex items-center justify-center mb-4"
                 style={{ background: "linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-end)))" }}
               >
-                <ArrowRight className="w-7 h-7 sm:w-8 sm:h-8 text-primary-foreground" />
+                <ArrowRight className="w-7 h-7 text-primary-foreground" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3">Готов начать?</h3>
-              <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-5">
+              <h3 className="text-lg font-semibold mb-2">Готов начать?</h3>
+              <p className="text-sm text-muted-foreground mb-4">
                 Присоединяйся к тысячам новичков
               </p>
               <Link href="/guides">
