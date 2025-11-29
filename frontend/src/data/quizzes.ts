@@ -218,6 +218,88 @@ export const quizzes: Record<string, QuizQuestion[]> = {
       explanation: "return возвращает значение из функции обратно в место вызова.",
     },
   ],
+
+  "dictionaries": [
+    {
+      id: "1",
+      question: "Как получить значение по ключу 'name' из словаря person?",
+      options: ["person.name", "person[name]", 'person["name"]', "person(name)"],
+      correctIndex: 2,
+      explanation: "Значение из словаря получают через квадратные скобки с ключом в кавычках: person[\"name\"]",
+    },
+    {
+      id: "2",
+      question: "Что вернёт person.get('phone') если ключа 'phone' нет в словаре?",
+      options: ["Ошибку KeyError", "None", "0", "False"],
+      correctIndex: 1,
+      explanation: "Метод .get() возвращает None если ключ не найден, в отличие от person['phone'] который вызовет ошибку.",
+    },
+    {
+      id: "3",
+      question: "Какой тип данных НЕ может быть ключом словаря?",
+      options: ["Строка", "Число", "Список", "Кортеж"],
+      correctIndex: 2,
+      explanation: "Списки изменяемы, поэтому не могут быть ключами. Ключи должны быть неизменяемыми (строки, числа, кортежи).",
+    },
+  ],
+
+  "string-methods": [
+    {
+      id: "1",
+      question: "Что делает метод .strip()?",
+      options: [
+        "Удаляет все пробелы из строки",
+        "Удаляет пробелы в начале и конце строки",
+        "Разбивает строку на список",
+        "Переводит в нижний регистр",
+      ],
+      correctIndex: 1,
+      explanation: "strip() удаляет пробелы (и другие пробельные символы) только в начале и конце строки.",
+    },
+    {
+      id: "2",
+      question: 'Что вернёт "hello".find("x")?',
+      options: ["None", "False", "-1", "Ошибку"],
+      correctIndex: 2,
+      explanation: "Метод find() возвращает -1 если подстрока не найдена.",
+    },
+    {
+      id: "3",
+      question: 'Как объединить список ["a", "b", "c"] в строку "a-b-c"?',
+      options: [
+        '["a", "b", "c"].join("-")',
+        '"-".join(["a", "b", "c"])',
+        'join("-", ["a", "b", "c"])',
+        '["a", "b", "c"].concat("-")',
+      ],
+      correctIndex: 1,
+      explanation: "В Python join() вызывается на разделителе: разделитель.join(список)",
+    },
+  ],
+
+  "error-handling": [
+    {
+      id: "1",
+      question: "Какой блок выполнится, если ошибки НЕ произошло?",
+      options: ["except", "else", "finally", "try"],
+      correctIndex: 1,
+      explanation: "Блок else выполняется только если в try не было ошибок.",
+    },
+    {
+      id: "2",
+      question: "Какая ошибка возникнет при int('abc')?",
+      options: ["TypeError", "ValueError", "SyntaxError", "NameError"],
+      correctIndex: 1,
+      explanation: "ValueError возникает когда функция получает аргумент правильного типа, но неподходящего значения.",
+    },
+    {
+      id: "3",
+      question: "Какой блок выполнится ВСЕГДА, независимо от ошибки?",
+      options: ["try", "except", "else", "finally"],
+      correctIndex: 3,
+      explanation: "Блок finally выполняется всегда — и при ошибке, и без неё. Используется для очистки ресурсов.",
+    },
+  ],
 };
 
 export function getQuizBySlug(slug: string): QuizQuestion[] | undefined {
