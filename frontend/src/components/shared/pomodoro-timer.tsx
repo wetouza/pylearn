@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Timer, 
@@ -10,7 +11,6 @@ import {
   Coffee, 
   Brain,
   X,
-  Settings,
   Volume2,
   VolumeX,
 } from "lucide-react";
@@ -20,7 +20,7 @@ import { useToast } from "./toast";
 type TimerMode = "work" | "shortBreak" | "longBreak";
 
 interface PomodoroSettings {
-  workDuration: number; // minutes
+  workDuration: number;
   shortBreakDuration: number;
   longBreakDuration: number;
   sessionsBeforeLongBreak: number;
@@ -46,11 +46,25 @@ export function PomodoroTimer({ isOpen, onClose }: PomodoroTimerProps) {
   const [timeLeft, setTimeLeft] = useState(settings.workDuration * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [completedSessions, setCompletedSessions] = useState(0);
-  const [showSettings, setShowSettings] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { addToast } = useToast();
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Get duration based on mode
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Prevent body scroll when open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
   const getDuration = useCallback((m: TimerMode) => {
     switch (m) {
       case "work": return settings.workDuration * 60;
@@ -59,7 +73,6 @@ export function PomodoroTimer({ isOpen, onClose }: PomodoroTimerProps) {
     }
   }, [settings]);
 
-  // Play notification sound
   const playNotificationSound = useCallback(() => {
     try {
       const audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
@@ -84,7 +97,6 @@ export function PomodoroTimer({ isOpen, onClose }: PomodoroTimerProps) {
     }
   }, []);
 
-  // Handle timer completion
   const handleTimerComplete = useCallback(() => {
     setIsRunning(false);
     
@@ -99,7 +111,7 @@ export function PomodoroTimer({ isOpen, onClose }: PomodoroTimerProps) {
       addToast({
         type: "success",
         title: "🍅 Сессия завершена!",
-        description: `Отличная работа! Сессий сегодня: ${newSessions}`,
+        description: `Отличная работа! Сессий: ${newSessions}`,
       });
 
       if (newSessions % settings.sessionsBeforeLongBreak === 0) {
@@ -120,7 +132,6 @@ export function PomodoroTimer({ isOpen, onClose }: PomodoroTimerProps) {
     }
   }, [mode, completedSessions, settings, addToast, playNotificationSound]);
 
-  // Timer logic
   useEffect(() => {
     if (!isRunning || !isOpen) return;
 
@@ -137,17 +148,14 @@ export function PomodoroTimer({ isOpen, onClose }: PomodoroTimerProps) {
     return () => clearInterval(interval);
   }, [isRunning, isOpen, handleTimerComplete]);
 
-  // Format time
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Progress percentage
   const progress = ((getDuration(mode) - timeLeft) / getDuration(mode)) * 100;
 
-  // Mode colors
   const modeColors = {
     work: "hsl(var(--primary))",
     shortBreak: "hsl(145 60% 45%)",
@@ -156,233 +164,233 @@ export function PomodoroTimer({ isOpen, onClose }: PomodoroTimerProps) {
 
   const modeLabels = {
     work: "Работа",
-    shortBreak: "Короткий перерыв",
-    longBreak: "Длинный перерыв",
+    shortBreak: "Перерыв",
+    longBreak: "Отдых",
   };
 
-  const modeIcons = {
-    work: Brain,
-    shortBreak: Coffee,
-    longBreak: Coffee,
-  };
+  const ModeIcon = mode === "work" ? Brain : Coffee;
 
-  const ModeIcon = modeIcons[mode];
+  // SVG circle calculations
+  const size = 160;
+  const strokeWidth = 6;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference * (1 - progress / 100);
 
-  if (!isOpen) return null;
-
-  return (
+  const content = (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onClose}
-        className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
-      >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-sm"
-        >
-          <div
-            className="rounded-2xl shadow-2xl overflow-hidden"
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 z-[9998]"
             style={{
-              backgroundColor: "hsl(var(--card))",
-              border: "1px solid hsl(var(--border))",
+              backgroundColor: "rgba(0, 0, 0, 0.6)",
+              backdropFilter: "blur(4px)",
             }}
-          >
-            {/* Header */}
-            <div
-              className="flex items-center justify-between p-4"
-              style={{ borderBottom: "1px solid hsl(var(--border))" }}
+          />
+
+          {/* Modal */}
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-[320px] pointer-events-auto"
             >
-              <div className="flex items-center gap-2">
-                <Timer className="w-5 h-5" style={{ color: modeColors[mode] }} />
-                <span className="font-semibold">Pomodoro</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setSettings(s => ({ ...s, soundEnabled: !s.soundEnabled }))}
-                  className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+              <div
+                className="rounded-2xl shadow-2xl overflow-hidden"
+                style={{
+                  backgroundColor: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--border))",
+                }}
+              >
+                {/* Header */}
+                <div
+                  className="flex items-center justify-between px-4 py-3"
+                  style={{ borderBottom: "1px solid hsl(var(--border))" }}
                 >
-                  {settings.soundEnabled ? (
-                    <Volume2 className="w-4 h-4" />
-                  ) : (
-                    <VolumeX className="w-4 h-4 text-muted-foreground" />
-                  )}
-                </button>
-                <button
-                  onClick={onClose}
-                  className="p-2 rounded-lg hover:bg-white/10 transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
+                  <div className="flex items-center gap-2">
+                    <Timer className="w-4 h-4" style={{ color: modeColors[mode] }} />
+                    <span className="font-semibold text-sm">Pomodoro</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setSettings(s => ({ ...s, soundEnabled: !s.soundEnabled }))}
+                      className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+                    >
+                      {settings.soundEnabled ? (
+                        <Volume2 className="w-4 h-4" />
+                      ) : (
+                        <VolumeX className="w-4 h-4 text-muted-foreground" />
+                      )}
+                    </button>
+                    <button
+                      onClick={onClose}
+                      className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
 
-            {/* Mode tabs */}
-            <div className="flex p-2 gap-1" style={{ backgroundColor: "hsl(var(--muted) / 0.3)" }}>
-              {(["work", "shortBreak", "longBreak"] as TimerMode[]).map((m) => (
-                <button
-                  key={m}
-                  onClick={() => {
-                    setMode(m);
-                    setTimeLeft(getDuration(m));
-                    setIsRunning(false);
-                  }}
-                  className="flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all"
-                  style={{
-                    backgroundColor: mode === m ? "hsl(var(--background))" : "transparent",
-                    color: mode === m ? modeColors[m] : "hsl(var(--muted-foreground))",
+                {/* Mode tabs */}
+                <div className="flex p-1.5 gap-1" style={{ backgroundColor: "hsl(var(--muted) / 0.3)" }}>
+                  {(["work", "shortBreak", "longBreak"] as TimerMode[]).map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => {
+                        setMode(m);
+                        setTimeLeft(getDuration(m));
+                        setIsRunning(false);
+                      }}
+                      className="flex-1 py-1.5 px-2 rounded-md text-[11px] font-medium transition-all"
+                      style={{
+                        backgroundColor: mode === m ? "hsl(var(--background))" : "transparent",
+                        color: mode === m ? modeColors[m] : "hsl(var(--muted-foreground))",
+                      }}
+                    >
+                      {modeLabels[m]}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Timer display */}
+                <div className="p-6 text-center">
+                  {/* Circular progress - responsive */}
+                  <div className="relative mx-auto mb-4" style={{ width: size, height: size }}>
+                    <svg 
+                      width={size} 
+                      height={size} 
+                      className="transform -rotate-90"
+                      viewBox={`0 0 ${size} ${size}`}
+                    >
+                      {/* Background circle */}
+                      <circle
+                        cx={size / 2}
+                        cy={size / 2}
+                        r={radius}
+                        fill="none"
+                        stroke="hsl(var(--muted))"
+                        strokeWidth={strokeWidth}
+                      />
+                      {/* Progress circle */}
+                      <circle
+                        cx={size / 2}
+                        cy={size / 2}
+                        r={radius}
+                        fill="none"
+                        stroke={modeColors[mode]}
+                        strokeWidth={strokeWidth}
+                        strokeLinecap="round"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={strokeDashoffset}
+                        className="transition-all duration-1000"
+                      />
+                    </svg>
+                    
+                    {/* Time display */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <ModeIcon className="w-5 h-5 mb-1" style={{ color: modeColors[mode] }} />
+                      <div className="text-3xl font-mono font-bold">{formatTime(timeLeft)}</div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">{modeLabels[mode]}</div>
+                    </div>
+                  </div>
+
+                  {/* Controls */}
+                  <div className="flex items-center justify-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-9 w-9"
+                      onClick={() => {
+                        setTimeLeft(getDuration(mode));
+                        setIsRunning(false);
+                      }}
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                    </Button>
+                    
+                    <Button
+                      variant="glow"
+                      className="h-9 px-6 gap-1.5 text-sm"
+                      onClick={() => setIsRunning(!isRunning)}
+                    >
+                      {isRunning ? (
+                        <>
+                          <Pause className="w-4 h-4" />
+                          Пауза
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-4 h-4" />
+                          Старт
+                        </>
+                      )}
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-9 w-9"
+                      onClick={() => {
+                        if (mode === "work") {
+                          setMode("shortBreak");
+                          setTimeLeft(settings.shortBreakDuration * 60);
+                        } else {
+                          setMode("work");
+                          setTimeLeft(settings.workDuration * 60);
+                        }
+                        setIsRunning(false);
+                      }}
+                    >
+                      {mode === "work" ? <Coffee className="w-4 h-4" /> : <Brain className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div
+                  className="flex items-center justify-center gap-4 px-4 py-3 text-xs"
+                  style={{ 
+                    backgroundColor: "hsl(var(--muted) / 0.3)",
+                    borderTop: "1px solid hsl(var(--border))",
                   }}
                 >
-                  {m === "work" ? "Работа" : m === "shortBreak" ? "Перерыв" : "Отдых"}
-                </button>
-              ))}
-            </div>
-
-            {/* Timer display */}
-            <div className="p-8 text-center">
-              {/* Circular progress */}
-              <div className="relative w-48 h-48 mx-auto mb-6">
-                <svg className="w-full h-full transform -rotate-90">
-                  {/* Background circle */}
-                  <circle
-                    cx="96"
-                    cy="96"
-                    r="88"
-                    fill="none"
-                    stroke="hsl(var(--muted))"
-                    strokeWidth="8"
-                  />
-                  {/* Progress circle */}
-                  <circle
-                    cx="96"
-                    cy="96"
-                    r="88"
-                    fill="none"
-                    stroke={modeColors[mode]}
-                    strokeWidth="8"
-                    strokeLinecap="round"
-                    strokeDasharray={2 * Math.PI * 88}
-                    strokeDashoffset={2 * Math.PI * 88 * (1 - progress / 100)}
-                    className="transition-all duration-1000"
-                  />
-                </svg>
-                
-                {/* Time display */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <ModeIcon className="w-6 h-6 mb-2" style={{ color: modeColors[mode] }} />
-                  <div className="text-4xl font-mono font-bold">{formatTime(timeLeft)}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{modeLabels[mode]}</div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold" style={{ color: modeColors.work }}>
+                      {completedSessions}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground">Сессий</div>
+                  </div>
+                  <div className="w-px h-6" style={{ backgroundColor: "hsl(var(--border))" }} />
+                  <div className="text-center">
+                    <div className="text-lg font-bold">
+                      {Math.round(completedSessions * settings.workDuration)}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground">Минут</div>
+                  </div>
+                  <div className="w-px h-6" style={{ backgroundColor: "hsl(var(--border))" }} />
+                  <div className="text-center">
+                    <div className="text-lg font-bold">🍅 {completedSessions}</div>
+                    <div className="text-[10px] text-muted-foreground">Помидоров</div>
+                  </div>
                 </div>
               </div>
-
-              {/* Controls */}
-              <div className="flex items-center justify-center gap-3">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => {
-                    setTimeLeft(getDuration(mode));
-                    setIsRunning(false);
-                  }}
-                >
-                  <RotateCcw className="w-4 h-4" />
-                </Button>
-                
-                <Button
-                  variant="glow"
-                  size="lg"
-                  className="w-24 gap-2"
-                  onClick={() => setIsRunning(!isRunning)}
-                >
-                  {isRunning ? (
-                    <>
-                      <Pause className="w-4 h-4" />
-                      Пауза
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-4 h-4" />
-                      Старт
-                    </>
-                  )}
-                </Button>
-
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => {
-                    if (mode === "work") {
-                      setMode("shortBreak");
-                      setTimeLeft(settings.shortBreakDuration * 60);
-                    } else {
-                      setMode("work");
-                      setTimeLeft(settings.workDuration * 60);
-                    }
-                    setIsRunning(false);
-                  }}
-                >
-                  {mode === "work" ? <Coffee className="w-4 h-4" /> : <Brain className="w-4 h-4" />}
-                </Button>
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div
-              className="flex items-center justify-center gap-6 p-4 text-sm"
-              style={{ 
-                backgroundColor: "hsl(var(--muted) / 0.3)",
-                borderTop: "1px solid hsl(var(--border))",
-              }}
-            >
-              <div className="text-center">
-                <div className="text-2xl font-bold" style={{ color: modeColors.work }}>
-                  {completedSessions}
-                </div>
-                <div className="text-xs text-muted-foreground">Сессий</div>
-              </div>
-              <div className="w-px h-8" style={{ backgroundColor: "hsl(var(--border))" }} />
-              <div className="text-center">
-                <div className="text-2xl font-bold">
-                  {Math.round(completedSessions * settings.workDuration)}
-                </div>
-                <div className="text-xs text-muted-foreground">Минут</div>
-              </div>
-              <div className="w-px h-8" style={{ backgroundColor: "hsl(var(--border))" }} />
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-500">
-                  🍅 {completedSessions}
-                </div>
-                <div className="text-xs text-muted-foreground">Помидоров</div>
-              </div>
-            </div>
+            </motion.div>
           </div>
-        </motion.div>
-      </motion.div>
+        </>
+      )}
     </AnimatePresence>
   );
-}
 
-// Floating trigger button
-export function PomodoroTrigger({ onClick }: { onClick: () => void }) {
-  return (
-    <motion.button
-      onClick={onClick}
-      className="fixed bottom-20 right-4 z-40 w-12 h-12 rounded-full shadow-lg flex items-center justify-center"
-      style={{
-        background: "linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-end)))",
-      }}
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.95 }}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      title="Pomodoro Timer"
-    >
-      <Timer className="w-5 h-5 text-white" />
-    </motion.button>
-  );
+  if (!mounted) return null;
+
+  return createPortal(content, document.body);
 }
