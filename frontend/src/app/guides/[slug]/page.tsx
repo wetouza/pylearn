@@ -31,6 +31,7 @@ import { ShareButtons } from "@/components/shared/share-buttons";
 import { guides, getGuideBySlug } from "@/data/guides";
 import { getQuizBySlug, hasQuiz } from "@/data/quizzes";
 import { useProgress } from "@/hooks/useProgress";
+import { useAchievementNotification } from "@/hooks/useAchievementNotification";
 import { formatDuration, getDifficultyLabel } from "@/lib/utils";
 import type { GuideContent } from "@/data/guides";
 
@@ -171,6 +172,9 @@ export default function GuidePage() {
   const [isCompleted, setIsCompleted] = useState(false);
   
   const { completeGuide, saveQuizResult, isGuideCompleted, updateStreak } = useProgress();
+  
+  // Enable achievement notifications
+  useAchievementNotification();
   
   // Check if already completed
   useEffect(() => {

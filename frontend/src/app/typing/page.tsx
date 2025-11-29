@@ -17,6 +17,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { useProgress, TypingStats } from "@/hooks/useProgress";
+import { useAchievementNotification } from "@/hooks/useAchievementNotification";
 
 // Слова для практики
 const wordLists = {
@@ -69,6 +70,9 @@ export default function TypingPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   
   const { progress, saveTypingStats, averageWpm } = useProgress();
+  
+  // Enable achievement notifications
+  useAchievementNotification();
 
   // Generate words for typing
   const generateWords = useCallback(() => {

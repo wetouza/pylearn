@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Lock } from "lucide-react";
+import { Trophy, Lock, Share2 } from "lucide-react";
 import { achievements, getAchievementById, rarityColors, Achievement } from "@/data/achievements";
 import { useProgress } from "@/hooks/useProgress";
+import { ShareAchievementModal } from "./share-achievement";
 
 interface AchievementsDisplayProps {
   showLocked?: boolean;
@@ -12,6 +14,7 @@ interface AchievementsDisplayProps {
 
 export function AchievementsDisplay({ showLocked = true, compact = false }: AchievementsDisplayProps) {
   const { progress } = useProgress();
+  const [shareAchievement, setShareAchievement] = useState<Achievement | null>(null);
   
   const unlockedIds = new Set(progress.achievements);
   
@@ -68,48 +71,72 @@ export function AchievementsDisplay({ showLocked = true, compact = false }: Achi
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-      {displayAchievements.map((achievement, index) => {
-        const isUnlocked = unlockedIds.has(achievement.id);
-        return (
-          <motion.div
-            key={achievement.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-            className="relative p-4 rounded-xl transition-all"
-            style={{
-              background: isUnlocked 
-                ? `${rarityColors[achievement.rarity]}10` 
-                : "hsl(var(--muted))",
-              border: `1px solid ${isUnlocked ? `${rarityColors[achievement.rarity]}30` : "hsl(var(--border))"}`,
-              opacity: isUnlocked ? 1 : 0.6,
-            }}
-          >
-            {/* Rarity indicator */}
-            <div
-              className="absolute top-2 right-2 w-2 h-2 rounded-full"
-              style={{ background: rarityColors[achievement.rarity] }}
-            />
-            
-            {/* Icon */}
-            <div className="text-3xl mb-2">
-              {isUnlocked ? achievement.icon : "🔒"}
-            </div>
-            
-            {/* Title */}
-            <h3 className="font-semibold text-sm mb-1">
-              {achievement.title}
-            </h3>
-            
-            {/* Description */}
-            <p className="text-xs text-muted-foreground">
-              {achievement.description}
-            </p>
-          </motion.div>
-        );
-      })}
-    </div>
+    <>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        {displayAchievements.map((achievement, index) => {
+          const isUnlocked = unlockedIds.has(achievement.id);
+          return (
+            <motion.div
+              key={achievement.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="relative p-4 rounded-xl transition-all group cursor-pointer"
+              style={{
+                background: isUnlocked 
+                  ? `${rarityColors[achievement.rarity]}10` 
+                  : "hsl(var(--muted))",
+                border: `1px solid ${isUnlocked ? `${rarityColors[achievement.rarity]}30` : "hsl(var(--border))"}`,
+                opacity: isUnlocked ? 1 : 0.6,
+              }}
+              onClick={() => isUnlocked && setShareAchievement(achievement)}
+            >
+              {/* Share button (visible on hover for unlocked) */}
+              {isUnlocked && (
+                <button
+                  className="absolute top-2 right-2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShareAchievement(achievement);
+                  }}
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                </button>
+              )}
+              
+              {/* Rarity indicator */}
+              <div
+                className="absolute top-2 right-2 w-2 h-2 rounded-full group-hover:opacity-0 transition-opacity"
+                style={{ background: rarityColors[achievement.rarity] }}
+              />
+              
+              {/* Icon */}
+              <div className="text-3xl mb-2">
+                {isUnlocked ? achievement.icon : "🔒"}
+              </div>
+              
+              {/* Title */}
+              <h3 className="font-semibold text-sm mb-1">
+                {achievement.title}
+              </h3>
+              
+              {/* Description */}
+              <p className="text-xs text-muted-foreground">
+                {achievement.description}
+              </p>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Share modal */}
+      {shareAchievement && (
+        <ShareAchievementModal
+          achievement={shareAchievement}
+          onClose={() => setShareAchievement(null)}
+        />
+      )}
+    </>
   );
 }
 

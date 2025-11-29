@@ -10,19 +10,16 @@ import {
   CheckCircle2,
   Circle,
   Trash2,
-  Edit2,
   Calendar,
-  TrendingUp,
   Star,
   Zap,
-  Award,
-  Clock,
+  Settings,
   Keyboard,
   BookOpen,
 } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -36,7 +33,9 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollReveal, StaggerContainer, StaggerItem } from "@/components/shared/motion";
 import { useProgress } from "@/hooks/useProgress";
+import { useAchievementNotification } from "@/hooks/useAchievementNotification";
 import { AchievementsDisplay } from "@/components/shared/achievements-display";
+import { ProgressManager } from "@/components/shared/progress-manager";
 import { achievements as allAchievements } from "@/data/achievements";
 import { guides } from "@/data/guides";
 
@@ -185,8 +184,12 @@ export default function GoalsPage() {
   const [goals, setGoals] = useState<Goal[]>(initialGoals);
   const [newGoalTitle, setNewGoalTitle] = useState("");
   const [isAddingGoal, setIsAddingGoal] = useState(false);
+  const [showProgressManager, setShowProgressManager] = useState(false);
   
   const { progress, completionPercentage, averageWpm, updateStreak } = useProgress();
+  
+  // Enable achievement notifications
+  useAchievementNotification();
   
   // Update streak on page visit
   useEffect(() => {
@@ -262,13 +265,28 @@ export default function GoalsPage() {
                 Твои{" "}
                 <span className="gradient-text">цели</span>
               </h1>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-lg text-muted-foreground mb-6">
                 Ставь цели, отслеживай прогресс и получай достижения.
                 Каждый маленький шаг приближает тебя к мастерству!
               </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowProgressManager(true)}
+                className="gap-2"
+              >
+                <Settings className="w-4 h-4" />
+                Управление прогрессом
+              </Button>
             </ScrollReveal>
           </div>
         </section>
+
+        {/* Progress Manager Modal */}
+        <ProgressManager
+          isOpen={showProgressManager}
+          onClose={() => setShowProgressManager(false)}
+        />
 
         {/* Stats */}
         <section className="py-8 border-y border-white/10 bg-background/50 backdrop-blur-xl">
