@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Sparkles } from "lucide-react";
+import { Menu, X, Sparkles, Code, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { CommandMenu } from "@/components/shared/command-menu";
+import { SnippetsLibrary } from "@/components/shared/snippets-library";
+import { PomodoroTimer } from "@/components/shared/pomodoro-timer";
 import { cn } from "@/lib/utils";
 
 const navigation = [
@@ -22,6 +24,8 @@ const navigation = [
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showSnippets, setShowSnippets] = useState(false);
+  const [showPomodoro, setShowPomodoro] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -102,6 +106,33 @@ export function Header() {
 
           {/* Right side */}
           <div className="flex items-center gap-1 sm:gap-2">
+            {/* Snippets button */}
+            <button
+              onClick={() => setShowSnippets(true)}
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground transition-colors"
+              style={{
+                backgroundColor: "hsl(var(--muted) / 0.5)",
+                border: "1px solid hsl(var(--border))",
+              }}
+              title="Библиотека сниппетов"
+            >
+              <Code className="w-4 h-4" />
+              <span className="hidden md:inline">Сниппеты</span>
+            </button>
+
+            {/* Pomodoro button */}
+            <button
+              onClick={() => setShowPomodoro(true)}
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground transition-colors"
+              style={{
+                backgroundColor: "hsl(var(--muted) / 0.5)",
+                border: "1px solid hsl(var(--border))",
+              }}
+              title="Pomodoro Timer"
+            >
+              <Timer className="w-4 h-4" />
+            </button>
+
             <CommandMenu />
             <ThemeToggle />
 
@@ -183,6 +214,10 @@ export function Header() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Modals */}
+      <SnippetsLibrary isOpen={showSnippets} onClose={() => setShowSnippets(false)} />
+      <PomodoroTimer isOpen={showPomodoro} onClose={() => setShowPomodoro(false)} />
     </header>
   );
 }
