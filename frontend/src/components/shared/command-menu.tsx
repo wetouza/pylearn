@@ -342,7 +342,7 @@ export function CommandMenu() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
             onClick={closeSearch}
-            className="fixed inset-0 z-[9999] touch-none"
+            className="fixed inset-0 z-[9999]"
             style={{
               backgroundColor: "rgba(0, 0, 0, 0.6)",
               backdropFilter: "blur(8px)",

@@ -102,7 +102,7 @@ export function SnippetsLibrary({ isOpen, onClose }: SnippetsLibraryProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-[9998] touch-none"
+            className="fixed inset-0 z-[9998]"
             style={{
               backgroundColor: "rgba(0, 0, 0, 0.6)",
               backdropFilter: "blur(4px)",
@@ -196,14 +196,14 @@ export function SnippetsLibrary({ isOpen, onClose }: SnippetsLibraryProps) {
             )}
 
             {/* Content - split view */}
-            <div className="flex-1 overflow-hidden flex flex-col sm:flex-row min-h-0">
+            <div className="flex-1 overflow-hidden flex flex-col sm:flex-row">
               {/* Snippets list */}
               <div 
-                className="w-full sm:w-1/2 overflow-y-auto p-3 space-y-2 overscroll-contain"
+                className="w-full sm:w-1/2 p-3 space-y-2"
                 style={{ 
                   borderRight: "1px solid hsl(var(--border))",
-                  minHeight: "200px",
-                  maxHeight: "calc(100vh - 200px)",
+                  overflowY: "auto",
+                  WebkitOverflowScrolling: "touch",
                 }}
               >
                 {filteredSnippets.length === 0 ? (
@@ -251,10 +251,10 @@ export function SnippetsLibrary({ isOpen, onClose }: SnippetsLibraryProps) {
 
               {/* Code preview */}
               <div 
-                className="w-full sm:w-1/2 overflow-y-auto p-3 overscroll-contain"
+                className="w-full sm:w-1/2 p-3"
                 style={{ 
-                  minHeight: "200px",
-                  maxHeight: "calc(100vh - 200px)",
+                  overflowY: "auto",
+                  WebkitOverflowScrolling: "touch",
                 }}
               >
                 {selectedSnippet ? (
